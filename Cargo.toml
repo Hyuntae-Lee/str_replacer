@@ -1,0 +1,6 @@
+[package]
+name = "str_replacer"
+version = "0.1.0"
+authors = ["Hyuntae-Lee <kkonchi@gmail.com>"]
+
+[dependencies]
