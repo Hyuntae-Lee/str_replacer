@@ -1,6 +1,6 @@
 use std::env;
 use std::fs::File;
-use std::io::Read;
+use std::io::{Read, Write};
 
 fn main() {
     // parse arguments
@@ -13,27 +13,26 @@ fn main() {
         Ok(x) => x
     };
 
-    // file read
-    // - open
+    // read
     let mut contents = String::new();
-    let mut file = match File::open(tar_file_path) {
+    match read_contents(&mut contents, tar_file_path) {
         Err(r) => {
             println!("{:?}", r);
             return;
         },
-        Ok(x) => x
-    };
-    // - read
-    match file.read_to_string(&mut contents) {
-        Err(r) => {
-            println!("{:?}", r);
-            return;
-        },
-        Ok(x) => x
+        Ok(size) => {
+            if size == 0 {
+                println!("File is empty!");
+                return;
+            }
+        }
     };
 
-    // test
-    println!("{}", contents);
+    // replace string
+    let new_contents = contents.replace(str_to_replace, str_to_replace_with);
+
+    // write to file
+    write_contents(tar_file_path, new_contents.as_str());
 }
 
 fn parse_input<'a>(input : &'a Vec<String>) -> Result<(&'a str, &'a str, &'a str), &'a str> {
@@ -42,4 +41,35 @@ fn parse_input<'a>(input : &'a Vec<String>) -> Result<(&'a str, &'a str, &'a str
     }
 
     return Ok((&input[1], &input[2], &input[3]));
+}
+
+fn read_contents(contents : &mut String, file_path : &str) -> Result<usize, String> {
+    // open
+    let mut file = match File::open(file_path) {
+        Err(r) => {
+            return Err(format!("{:?}", r));
+        },
+        Ok(x) => x
+    };
+    // read
+    let contents_size = match file.read_to_string(contents) {
+        Err(r) => {
+            return Err(format!("{:?}", r));
+        },
+        Ok(x) => x
+    };
+
+    return Ok(contents_size);
+}
+
+fn write_contents<'a>(file_path : &str, contents : &str) {
+    // open
+    let mut file = match File::create(file_path) {
+        Err(r) => {
+            return println!("{:?}", r);
+        },
+        Ok(x) => x
+    };
+    // write
+    file.write_all(contents.as_bytes());
 }
